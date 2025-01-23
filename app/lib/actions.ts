@@ -1,11 +1,11 @@
 'use server';
 
-import { signIn } from '@/auth';
-import { AuthError } from 'next-auth';
 import { z } from 'zod';
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { signIn } from '@/auth';
+import { AuthError } from 'next-auth';
 
 const FormSchema = z.object({
     id: z.string(),
@@ -22,6 +22,7 @@ const FormSchema = z.object({
 });
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
+const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
 export type State = {
     errors?: {
@@ -70,9 +71,6 @@ export async function createInvoice(prevState: State, formData: FormData) {
     redirect('dashboard/invoices');
 }
 
-// Use Zod to update the expected types
-const UpdateInvoice = FormSchema.omit({ id: true, date: true });
-
 export async function updateInvoice(id: string, prevState: State, formData: FormData) {
     const validatedFields = UpdateInvoice.safeParse({
         customerId: formData.get('customerId'),
@@ -96,7 +94,7 @@ export async function updateInvoice(id: string, prevState: State, formData: Form
         SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
         WHERE id = ${id}
         `;
-    } catch {
+    } catch (error) {
         return { message: 'Database Error. Failed to Update Invoice.'};
     }
 
