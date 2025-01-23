@@ -22,7 +22,6 @@ const FormSchema = z.object({
 });
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
-const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
 export type State = {
     errors?: {
@@ -61,6 +60,8 @@ export async function createInvoice(prevState: State, formData: FormData) {
         VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
         `;
     } catch (error) {
+        console.log(error)
+
         return {
             message: 'Database Error: Failed to Create Invoice.',
         };
@@ -68,8 +69,10 @@ export async function createInvoice(prevState: State, formData: FormData) {
 
     // Revalidate the cache for the invoices page and redirect the user.
     revalidatePath('/dashboard/invoices');
-    redirect('dashboard/invoices');
+    redirect('/dashboard/invoices');
 }
+
+const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
 export async function updateInvoice(id: string, prevState: State, formData: FormData) {
     const validatedFields = UpdateInvoice.safeParse({
@@ -95,6 +98,8 @@ export async function updateInvoice(id: string, prevState: State, formData: Form
         WHERE id = ${id}
         `;
     } catch (error) {
+        console.log(error)
+        
         return { message: 'Database Error. Failed to Update Invoice.'};
     }
 
